@@ -93,11 +93,20 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) != GPIO_PIN_RESET)
+  {
+    HAL_Delay(500U);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
+  }
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+    GPIO_PinState state = GPIO_PIN_RESET;
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET)
+    {
+      state = GPIO_PIN_SET;
+    }
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, state);
+    HAL_Delay(10U);
   }
   /* USER CODE END 3 */
 }
