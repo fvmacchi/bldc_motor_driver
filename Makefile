@@ -36,9 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Src/main.c \
-Src/stm32f0xx_it.c \
-Src/stm32f0xx_hal_msp.c \
+$(wildcard Src/*.c) \
+$(wildcard Src/drivers/*.c) \
 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim.c \
 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_tim_ex.c \
 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c \
@@ -52,8 +51,7 @@ Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c \
 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c \
 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c \
 Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c \
-Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c \
-Src/system_stm32f0xx.c  
+Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c
 
 # ASM sources
 ASM_SOURCES =  \

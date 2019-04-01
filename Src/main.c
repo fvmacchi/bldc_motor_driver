@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "digital_input.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,6 +44,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+static digitalInput_handle_S buttonInput;
 
 /* USER CODE END PV */
 
@@ -88,12 +90,17 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-
+  const digitalInput_config_S buttonInputConfig = {
+    .GPIOx = GPIOA,
+    .pin = GPIO_PIN_0,
+    .pull = DIGITAL_INPUT_PULL_UP,
+  };
+  digitalInput_init(&buttonInput, buttonInputConfig);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) != GPIO_PIN_RESET)
+  while (digitalInput_getState(&buttonInput))
   {
     HAL_Delay(500U);
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
@@ -101,7 +108,7 @@ int main(void)
   while (1)
   {
     GPIO_PinState state = GPIO_PIN_RESET;
-    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET)
+    if (digitalInput_getState(&buttonInput) == FALSE)
     {
       state = GPIO_PIN_SET;
     }
@@ -159,12 +166,6 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PA0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB7 */
   GPIO_InitStruct.Pin = GPIO_PIN_7;
