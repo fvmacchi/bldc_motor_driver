@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "digital_output.h"
 #include "digital_input.h"
 /* USER CODE END Includes */
 
@@ -45,6 +46,7 @@
 
 /* USER CODE BEGIN PV */
 
+static digitalOutput_handle_S ledOutput;
 static digitalInput_handle_S buttonInput;
 
 /* USER CODE END PV */
@@ -90,6 +92,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+
+  // SETUP LED OUTPUT
+  const digitalOutput_config_S ledOutputConfig = {
+    .GPIOx = GPIOB,
+    .pin = GPIO_PIN_7,
+    .openDrain = FALSE,
+  };
+  digitalOutput_init(&ledOutput, ledOutputConfig);
+
+  // SETUP BUTTON INPUT
   const digitalInput_config_S buttonInputConfig = {
     .GPIOx = GPIOA,
     .pin = GPIO_PIN_0,
@@ -103,16 +115,13 @@ int main(void)
   while (digitalInput_getState(&buttonInput))
   {
     HAL_Delay(500U);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
+    const bool ledState = digitalOutput_getState(&ledOutput);
+    digitalOutput_setState(&ledOutput, (ledState == FALSE));
   }
   while (1)
   {
-    GPIO_PinState state = GPIO_PIN_RESET;
-    if (digitalInput_getState(&buttonInput) == FALSE)
-    {
-      state = GPIO_PIN_SET;
-    }
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, state);
+    const bool buttonState = digitalInput_getState(&buttonInput);
+    digitalOutput_setState(&ledOutput, (buttonState == FALSE));
     HAL_Delay(10U);
   }
   /* USER CODE END 3 */
@@ -157,23 +166,10 @@ void SystemClock_Config(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
