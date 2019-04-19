@@ -23,8 +23,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "digital_output.h"
 #include "digital_input.h"
+#include "pwm_output.h"
+#include "pin_configuration.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,8 +47,9 @@
 
 /* USER CODE BEGIN PV */
 
-static digitalOutput_handle_S ledOutput;
 static digitalInput_handle_S buttonInput;
+static pwmBase_handle_S pwmBase;
+static pwmOutput_handle_S ledPwmOutput;
 
 /* USER CODE END PV */
 
@@ -93,13 +95,7 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
-  // SETUP LED OUTPUT
-  const digitalOutput_config_S ledOutputConfig = {
-    .GPIOx = GPIOB,
-    .pin = GPIO_PIN_7,
-    .openDrain = FALSE,
-  };
-  digitalOutput_init(&ledOutput, ledOutputConfig);
+  pinConfiguration_setup();
 
   // SETUP BUTTON INPUT
   const digitalInput_config_S buttonInputConfig = {
@@ -108,20 +104,58 @@ int main(void)
     .pull = DIGITAL_INPUT_PULL_UP,
   };
   digitalInput_init(&buttonInput, buttonInputConfig);
-  /* USER CODE END 2 */
 
+  // SETUP PWM BASE
+  const pwmBase_config_S pwmBaseConfig = {
+    .timer = TIM17,
+    .frequencyHz = 20U * KILO,
+    .deadTimeNS = 0U,
+  };
+  pwmBase_init(&pwmBase, pwmBaseConfig);
+
+  // SETUP LED PWM
+  const pwmOutput_config_S ledPwmOutputConfig = {
+    .timerOutputChannel = TIM_CHANNEL_1,
+  };
+  pwmOutput_init(&ledPwmOutput, ledPwmOutputConfig, &pwmBase);
+
+  /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint32_t count = 0U;
+  bool rampingUp = TRUE;
   while (digitalInput_getState(&buttonInput))
   {
-    HAL_Delay(500U);
-    const bool ledState = digitalOutput_getState(&ledOutput);
-    digitalOutput_setState(&ledOutput, (ledState == FALSE));
+    pwmOutput_setDuty(&ledPwmOutput, _P15(1.0F) - (count * _P15(0.001)));
+    if (rampingUp)
+    {
+      count++;
+      if (count == 500U)
+      {
+        rampingUp = FALSE;
+      }
+    }
+    else
+    {
+      count--;
+      if (count == 0U)
+      {
+        rampingUp = TRUE;
+      }
+    }
+    HAL_Delay(1U);
   }
   while (1)
   {
     const bool buttonState = digitalInput_getState(&buttonInput);
-    digitalOutput_setState(&ledOutput, (buttonState == FALSE));
+    if (buttonState)
+    {
+      pwmOutput_setDuty(&ledPwmOutput, _P15(1.0F));
+    }
+    else
+    {
+      pwmOutput_setDuty(&ledPwmOutput, _P15(0.9));
+    }
     HAL_Delay(10U);
   }
   /* USER CODE END 3 */
